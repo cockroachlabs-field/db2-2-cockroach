@@ -113,12 +113,22 @@ if dropdown:
 
                 for s in match.group().splitlines():
                     if 'CREATE TABLE' in s:
-                        regtx = re.compile(r'CREATE TABLE (.+) (.+) \(')
-                        mattx = regtx.match(s)
-                        new_sch = mattx.group(1).replace('"', '').strip()
-                        new_tbl = mattx.group(2).replace('"', '').strip()
-                        new_table = 'CREATE TABLE {}{} (\n'.format(new_sch,
-                                                                   new_tbl)
+                        # Detect if statement contains schema definitions and tables
+                        keywords = detect_keywords(s)
+                        lenkeys = len(keywords)
+
+                        if lenkeys == 3:
+                            regtx = re.compile(r'CREATE TABLE (.+) \(')
+                            mattx = regtx.match(s)
+                            new_tbl = mattx.group(1).replace('"', '').strip()
+                            new_table = 'CREATE TABLE {} (\n'.format(new_tbl)
+                        if lenkeys == 4:
+                            regtx = re.compile(r'CREATE TABLE (.+) (.+) \(')
+                            mattx = regtx.match(s)
+                            new_sch = mattx.group(1).replace('"', '').strip()
+                            new_tbl = mattx.group(2).replace('"', '').strip()
+                            new_table = 'CREATE TABLE {}{} (\n'.format(new_sch,
+                                                                       new_tbl)
                         tofile += f"\n\n-- CREATE TABLE ---\n "
 
                     else:
