@@ -1,5 +1,24 @@
 # DB2 to CockroachDB
 
+Schema conversion from DB2 to CockroachDB covers:
+
+* schema, database
+* create table
+* create unique index
+* create indexes
+
+Require transformations or redesign in the business logic:
+
+* alter table (might require redesign when working with PRIMARY/FOREIGN KEY references)
+* changefeeds (example command for each table)
+
+Not migrated:
+
+* create sequence
+* alter sequence
+* create trigger
+* create procedure 
+
 ### Setup 
 * Setup and activate your local Python 3.x environment `venv`
 
