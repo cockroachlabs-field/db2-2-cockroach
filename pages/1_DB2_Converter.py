@@ -63,7 +63,7 @@ cdcusr = {"user": "user"}
 
 st.sidebar.subheader("Config")
 # Create an upload field
-uploaded_file = st.sidebar.file_uploader("1) Upload a .sql or .ddl file:", type=['sql', 'ddl'])
+uploaded_file = st.sidebar.file_uploader("1) Upload a .deb, .sql, or .ddl file:", type=['sql', 'ddl', 'db2'])
 
 # Check if a file was uploaded
 if uploaded_file:
