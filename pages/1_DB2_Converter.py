@@ -208,7 +208,7 @@ if dropdown:
 
             if 'ALTER TABLE' in match.group() and 'DATA CAPTURE' in dropdown:
                 for s in match.group().splitlines():
-                    # ALTER TABLE "BCCUST  "."BC_INDIVIDUAL_NAME_HST" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;
+                    
                     dcdreg = r'^(?P<alter>\w+) (?P<table>\w+) \"(?P<schema_name>\w+)  \"\.\"(?P<table_name>\w+)\" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;'
                     dcdmatches = re.finditer(dcdreg, s, re.MULTILINE)
                     for cdcmatchNum, cdcmatch in enumerate(dcdmatches, start=1):
