@@ -165,7 +165,7 @@ if dropdown:
                                                                                                     '').replace(
                             'NO ORDER ) ,',
                             '').replace('00000001',
-                                        '').replace('GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1)','').replace('varchar','STRING').replace('timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP','TIMESTAMP NOT NULL').replace('timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP','TIMESTAMP NOT NULL')
+                                        '').replace('GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1)','').replace('varchar','STRING').replace('timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP','TIMESTAMP NOT NULL').replace('ON UPDATE CURRENT_TIMESTAMP','')
 
                         if len(col_replace.strip()) > 0:
                             new_table += f"\t{col_replace}\n"
