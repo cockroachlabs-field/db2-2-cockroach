@@ -63,7 +63,7 @@ cdcusr = {"user": "user"}
 
 st.sidebar.subheader("Config")
 # Create an upload field
-uploaded_file = st.sidebar.file_uploader("1) Upload a .deb, .sql, or .ddl file:", type=['sql', 'ddl', 'db2'])
+uploaded_file = st.sidebar.file_uploader("1) Upload a .db2, .sql or, .ddl file:", type=['sql', 'ddl', 'db2'])
 
 # Check if a file was uploaded
 if uploaded_file:
@@ -80,9 +80,11 @@ cdcuser = st.sidebar.text_input("**(Optional)** CDC User:", value=cdcusr["user"]
 dropdown = st.multiselect("Select DDL statement, for CDC you must choose the `ALTER TABLE` and `DATA CAPTURE`: ",
                           options)
 
+
 def detect_keywords(string):
     keywords = re.findall(r'\b[a-zA-Z0-9_\(]+\b', string)
     return keywords
+
 
 # Print the selected options
 if dropdown:
@@ -93,8 +95,8 @@ if dropdown:
     # with open('data/bccust.sql', 'r') as f:
     #    text = f.read()
 
-    regex = r'(?s)^(' + reg + ').+?;'
-    matches = re.finditer(regex, text, re.MULTILINE)
+    regex = r'(?s)(' + reg + ').+?(;|@)'
+    matches = re.finditer(regex, text, re.MULTILINE | re.DOTALL)
 
     for matchNum, match in enumerate(matches, start=1):
 
@@ -206,7 +208,7 @@ if dropdown:
 
             if 'ALTER TABLE' in match.group() and 'DATA CAPTURE' in dropdown:
                 for s in match.group().splitlines():
-                   
+                    # ALTER TABLE "BCCUST  "."BC_INDIVIDUAL_NAME_HST" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;
                     dcdreg = r'^(?P<alter>\w+) (?P<table>\w+) \"(?P<schema_name>\w+)  \"\.\"(?P<table_name>\w+)\" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;'
                     dcdmatches = re.finditer(dcdreg, s, re.MULTILINE)
                     for cdcmatchNum, cdcmatch in enumerate(dcdmatches, start=1):
