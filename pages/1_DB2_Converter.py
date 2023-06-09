@@ -95,7 +95,7 @@ if dropdown:
     # with open('data/bccust.sql', 'r') as f:
     #    text = f.read()
 
-    regex = r'(?s)(' + reg + ').+?(;|@)'
+    regex = r'(?s)(' + reg + ').+?;'
     matches = re.finditer(regex, text, re.MULTILINE | re.DOTALL)
 
     for matchNum, match in enumerate(matches, start=1):
@@ -124,17 +124,11 @@ if dropdown:
                         lenkeys = len(keywords)
 
                         if lenkeys == 3:
-                            regtx = re.compile(r'CREATE TABLE (.+) \(')
-                            mattx = regtx.match(s)
-                            new_tbl = mattx.group(1).replace('"', '').strip()
-                            new_table = 'CREATE TABLE {} (\n'.format(new_tbl)
-                        if lenkeys == 4:
-                            regtx = re.compile(r'CREATE TABLE (.+) (.+) \(')
-                            mattx = regtx.match(s)
-                            new_sch = mattx.group(1).replace('"', '').strip()
-                            new_tbl = mattx.group(2).replace('"', '').strip()
-                            new_table = 'CREATE TABLE {}{} (\n'.format(new_sch,
-                                                                       new_tbl)
+                            new_table = f"{keywords[0]} {keywords[1]} {keywords[2]} (\n"
+                        elif lenkeys == 4:
+                            new_table = f"{keywords[0]} {keywords[1]} {keywords[2]}.{keywords[3]} (\n"
+                        else:
+                            print("not a valid table")
                         tofile += f"\n\n-- CREATE TABLE ---\n "
 
                     else:
@@ -145,10 +139,11 @@ if dropdown:
                         if "UNICODE" in s:
                             s = ""
 
+
                         col_replace = s.replace(' OCTETS', '').replace("TIMESTAMP NOT NULL ",
-                                                                       'TIMESTAMPTZ').replace(
+                                                                       'TIMESTAMPTZ NOT NULL ').replace(
                             '\'0001-01-01-00.00.00.000000\'', '').replace('VARCHAR', 'STRING').replace(
-                            'SMALLINT NOT NULL', 'INT').replace(
+                            'SMALLINT NOT NULL', 'INT NOT NULL').replace(
                             'CHAR', 'STRING').replace('WITH DEFAULT ', '').replace('"', '').strip().replace('0 )',
                                                                                                             ')').strip().replace(
                             '0 ,', ',').replace('COMPRESS YES ADAPTIVE', '').replace('\'TODO\' )', ')').replace(
@@ -208,7 +203,7 @@ if dropdown:
 
             if 'ALTER TABLE' in match.group() and 'DATA CAPTURE' in dropdown:
                 for s in match.group().splitlines():
-                    
+                    # ALTER TABLE "BCCUST  "."BC_INDIVIDUAL_NAME_HST" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;
                     dcdreg = r'^(?P<alter>\w+) (?P<table>\w+) \"(?P<schema_name>\w+)  \"\.\"(?P<table_name>\w+)\" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;'
                     dcdmatches = re.finditer(dcdreg, s, re.MULTILINE)
                     for cdcmatchNum, cdcmatch in enumerate(dcdmatches, start=1):
@@ -223,10 +218,12 @@ if dropdown:
             if 'ALTER TABLE' in match.group():
                 for s in match.group().splitlines():
                     if 'DATA CAPTURE' not in s:
+                        if 'ALTER TABLE ' in s and 'PCTFREE 0;' in s:
+                            s = ""
                         altertable = s.replace('ALTER TABLE "' + schema_name + '  "."',
                                                'ALTER TABLE ' + schema_name + '.').replace('"', '').replace('ENFORCED',
                                                                                                             '').replace(
-                            'ENABLE QUERY OPTIMIZATION', '')
+                            'ENABLE QUERY OPTIMIZATION', '').replace('PCTFREE 0','')
                         if len(altertable.strip()) > 0:
                             tofile += f"{altertable}\n"
                 tofile += "\n"
