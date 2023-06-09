@@ -80,6 +80,10 @@ cdcuser = st.sidebar.text_input("**(Optional)** CDC User:", value=cdcusr["user"]
 dropdown = st.multiselect("Select DDL statement, for CDC you must choose the `ALTER TABLE` and `DATA CAPTURE`: ",
                           options)
 
+def detect_keywords(string):
+    keywords = re.findall(r'\b[a-zA-Z0-9_\(]+\b', string)
+    return keywords
+
 # Print the selected options
 if dropdown:
     tofile = "--- DB2 to CockroachDB Schema Migration \n"
