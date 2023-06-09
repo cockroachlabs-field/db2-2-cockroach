@@ -125,11 +125,13 @@ if dropdown:
 
                         if lenkeys == 3:
                             new_table = f"{keywords[0]} {keywords[1]} {keywords[2]} (\n"
+                            tbl_name = keywords[2]
                         elif lenkeys == 4:
                             new_table = f"{keywords[0]} {keywords[1]} {keywords[2]}.{keywords[3]} (\n"
+                            tbl_name = keywords[3]
                         else:
                             print("not a valid table")
-                        tofile += f"\n\n-- CREATE TABLE ---\n "
+                        tofile += f"\n\n-- CREATE TABLE {tbl_name} ---\n "
 
                     else:
                         if 'IN ' in s:
