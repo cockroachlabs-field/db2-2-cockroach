@@ -119,6 +119,7 @@ if dropdown:
 
                 for s in match.group().splitlines():
                     if 'CREATE TABLE' in s:
+                        # st.write(s)
                         # Detect if statement contains schema definitions and tables
                         keywords = detect_keywords(s)
                         lenkeys = len(keywords)
@@ -126,12 +127,14 @@ if dropdown:
                         if lenkeys == 3:
                             new_table = f"{keywords[0]} {keywords[1]} {keywords[2]} (\n"
                             tbl_name = keywords[2]
+                            tofile += f"\n\n-- CREATE TABLE {keywords[2]} ---\n "
                         elif lenkeys == 4:
                             new_table = f"{keywords[0]} {keywords[1]} {keywords[2]}.{keywords[3]} (\n"
                             tbl_name = keywords[3]
+                            print(tbl_name)
+                            tofile += f"\n\n-- CREATE TABLE {keywords[2]}.{tbl_name} ---\n "
                         else:
                             print("not a valid table")
-                        tofile += f"\n\n-- CREATE TABLE {tbl_name} ---\n "
 
                     else:
                         if 'IN ' in s:
