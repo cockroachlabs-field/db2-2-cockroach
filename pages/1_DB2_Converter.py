@@ -72,6 +72,8 @@ if uploaded_file:
     file_contents = byte_contents.read()
     text = file_contents.decode("UTF-8")
 
+
+
 cdcselect = st.sidebar.selectbox(
     "Set a CDC Sink, sets examples on how to setup Streaming from the CockorachDB Cluster:", cdcsinks)
 cdcoptions = st.sidebar.text_area("**(Optional)** Configure the CDC Sink :", value=cdcsinks[cdcselect])
@@ -80,7 +82,7 @@ cdcuser = st.sidebar.text_input("**(Optional)** CDC User:", value=cdcusr["user"]
 dropdown = st.multiselect("Select DDL statement, for CDC you must choose the `ALTER TABLE` and `DATA CAPTURE`: ",
                           options)
 
-
+st.success("[CDC Sink configuration reference](https://www.cockroachlabs.com/docs/stable/create-changefeed.html)")
 def detect_keywords(string):
     keywords = re.findall(r'\b[a-zA-Z0-9_\(]+\b', string)
     return keywords
@@ -88,16 +90,12 @@ def detect_keywords(string):
 
 # Print the selected options
 if dropdown:
+    ine = "IF NOT EXIST"
     tofile = "--- DB2 to CockroachDB Schema Migration \n"
     reg = "|".join(dropdown)
-    # st.write("You selected:", reg)
-
-    # with open('data/bccust.sql', 'r') as f:
-    #    text = f.read()
-
     regex = r'(?s)(' + reg + ').+?;'
     matches = re.finditer(regex, text, re.MULTILINE | re.DOTALL)
-
+    print(text)
     for matchNum, match in enumerate(matches, start=1):
 
         for groupNum in range(0, len(match.groups())):
@@ -108,31 +106,29 @@ if dropdown:
                 matx = regx.match(match.group())
                 schema_name = matx.group(1).replace('"', '').strip()
                 dbuser = matx.group(2).replace('"', '').strip()
-                new_string += f"CREATE DATABASE {schema_name};\n"
+                new_string += f"CREATE DATABASE {ine} {schema_name};\n"
                 new_string += f"USE {schema_name};\n"
-                new_string += f"CREATE USER {dbuser};\n"
-                new_string += 'CREATE SCHEMA {} AUTHORIZATION {};\n\n'.format(schema_name,
+                new_string += f"CREATE USER  {dbuser};\n"
+                new_string += 'CREATE SCHEMA IF NOT EXISTS AUTHORIZATION {};\n\n'.format(schema_name,
                                                                               dbuser)
                 tofile += new_string
 
             if 'CREATE TABLE' in match.group():
-
                 for s in match.group().splitlines():
                     if 'CREATE TABLE' in s:
                         # st.write(s)
                         # Detect if statement contains schema definitions and tables
                         keywords = detect_keywords(s)
                         lenkeys = len(keywords)
-
                         if lenkeys == 3:
-                            new_table = f"{keywords[0]} {keywords[1]} {keywords[2]} (\n"
+                            new_table = f"{keywords[0]} {keywords[1]} {ine} {keywords[2]} (\n"
                             tbl_name = keywords[2]
-                            tofile += f"\n\n-- CREATE TABLE {keywords[2]} ---\n "
+                            tofile += f"\n\n-- CREATE TABLE {ine} {keywords[2]} ---\n "
                         elif lenkeys == 4:
-                            new_table = f"{keywords[0]} {keywords[1]} {keywords[2]}.{keywords[3]} (\n"
+                            new_table = f"{keywords[0]} {keywords[1]} {ine} {keywords[2]}.{keywords[3]} (\n"
                             tbl_name = keywords[3]
                             print(tbl_name)
-                            tofile += f"\n\n-- CREATE TABLE {keywords[2]}.{tbl_name} ---\n "
+                            tofile += f"\n\n-- CREATE TABLE {ine} {keywords[2]}.{tbl_name} ---\n "
                         else:
                             print("not a valid table")
 
@@ -179,6 +175,7 @@ if dropdown:
                 tofile += new_table
 
             if 'CREATE INDEX' in match.group():
+                print(match.group())
                 for s in match.group().splitlines():
                     indx = s.replace('CREATE INDEX "' + schema_name + '  "."', 'CREATE INDEX ').replace('  "."',
                                                                                                         '.').replace(
@@ -192,6 +189,7 @@ if dropdown:
                     if len(indx.strip()) > 0:
                         tofile += f"\n{indx}"
                 tofile += ";\n"
+
             if 'CREATE UNIQUE INDEX' in match.group():
                 for s in match.group().splitlines():
                     indx = s.replace('CREATE UNIQUE INDEX "' + schema_name + '  "."', 'CREATE UNIQUE INDEX ').replace(
@@ -209,6 +207,7 @@ if dropdown:
                 tofile += ";\n\n"
 
             if 'ALTER TABLE' in match.group() and 'DATA CAPTURE' in dropdown:
+
                 for s in match.group().splitlines():
                     # ALTER TABLE "BCCUST  "."BC_INDIVIDUAL_NAME_HST" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;
                     dcdreg = r'^(?P<alter>\w+) (?P<table>\w+) \"(?P<schema_name>\w+)  \"\.\"(?P<table_name>\w+)\" DATA CAPTURE CHANGES INCLUDE LONGVAR COLUMNS;'
@@ -223,6 +222,7 @@ if dropdown:
                         tofile += f"{sink}\n"
 
             if 'ALTER TABLE' in match.group():
+                print(s)
                 for s in match.group().splitlines():
                     if 'DATA CAPTURE' not in s:
                         if 'ALTER TABLE ' in s and 'PCTFREE 0;' in s:
